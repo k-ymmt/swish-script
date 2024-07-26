@@ -1,0 +1,20 @@
+{% for i in 2..<args.arguments["number"] %}
+struct Concat{{ i }}<{% for j in 1..<i %}Parser\(i){% if j not i %}, {% endif %}{% endfor %}>: Parsable {
+  {% for j in 1..<i %}
+  let parser{{ j }}: Parser{{ j }}
+  {% endfor %}
+
+  init({% for j in 1..<i %}_ parser{{ j }}: Parser{{ j }}{% if j not i %}, {% endif %}) {
+    {% for j in 1..<i %}
+    self.parser{{ j }} = parser{{ j }}
+    {% endfor %}
+  }
+
+  func parse(_ input: Substring) throws(ParseError) -> ParseOutput<({% for j in 1..<i %}Parser{{ j }}.O{% if j not i %}, {% endif %})> {
+    {% for j in 1..<i %}
+    let result{{ j }} = try parser.parse({% if j is 1 %}input{% else %}result{{ j - 1 }}{% endif %}
+    {% endfor %}
+
+    return .init(data: ({% for j in 1..<i %}result{{ j }}.data{% if j is i %}, {% endif %}), rest: result{{ j }}.rest)
+  }
+}

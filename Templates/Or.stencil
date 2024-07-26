@@ -1,0 +1,48 @@
+public struct Or<O>: Parsable {
+    let parsers: [any Parsable<O>]
+
+    public init(_ parsers: [any Parsable<O>]) {
+        self.parsers = parsers
+    }
+
+    public init(_ parsers: (any Parsable<O>)...) {
+        self.parsers = parsers
+        
+    }
+
+    public func parse(_ input: Substring) throws(ParseError) -> ParseOutput<O> {
+        for parser in parsers {
+            guard let result = try? parser.parse(input) else {
+                continue
+            }
+
+            return result
+        }
+
+        throw ParseError(message: "Don't match parsers")
+    }
+}
+
+{% for i in 2...argument["number"] %}
+public struct Or{{ i }}<{% for j in 1...i %}Parser{{ j }}: Parsable{% if j != i %}, {% endif %}{% endfor %}>: Parsable where {% for j in 2...i %}Parser1.O == Parser{{ j }}.O{% if j != i %}, {% endif %}{% endfor %} {
+    public typealias O = Parser1.O
+    {% for j in 1...i %}
+    let parser{{ j }}: Parser{{ j }}
+    {% endfor %}
+
+    public init({% for j in 1...i %}_ parser{{ j }}: Parser{{ j }}{% if j != i %}, {% endif %}{% endfor %}) {
+        {% for j in 1...i %}
+        self.parser{{ j }} = parser{{ j }}
+        {% endfor %}
+    }
+
+    public func parse(_ input: Substring) throws(ParseError) -> ParseOutput<O> {
+        {% for j in 1...i %}
+        if let result = try? parser{{ j }}.parse(input) {
+            return .init(data: result.data, rest: result.rest)
+        }
+        {% endfor %}
+        throw ParseError(message: "Don't match parser")
+    }
+}
+{% endfor %}

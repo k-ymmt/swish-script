@@ -1,0 +1,8 @@
+sources:
+  - "Sources/Siamese"
+templates:
+  - Templates/Or.stencil
+output:
+  path: "Sources/Siamese/Generated/Or.swift"
+args:
+  number: 10
